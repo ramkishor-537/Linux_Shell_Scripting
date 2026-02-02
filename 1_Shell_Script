@@ -1,0 +1,252 @@
+1_Shell_Script
+
+95% thinking + design + 5% coding
+
+pseudo code -> no syntax, just assumption
+
+test.sh
+#!/bin/bash # this first line of shell script represents the path of interpreter
+echo "welcome"
+
+sh test.sh
+
+Shell Scripting:
+a. variables
+b. data types
+c. conditions
+d. functions
+e. loops
+f. error handling
+
+
+In this page we will cover:
+Shell Scripting:
+a. variables
+b. data types
+c. conditions
+
+Variables:
+=================
+let x=1, y=0
+
+
+variables are like containers that holds something
+
+PERSON1=Suresh
+PERSON2=Ramesh
+
+$VAR_NAME
+${VAR_NAME}
+
+sh 03-conversation.sh Suresh Ramesh
+args == parameters
+
+$1=Suresh
+$2=Ramesh
+
+I want a command to be executed and take the output into variable, how to do that?
+
+VAR_NAME=$(command)
+
+
+
+Vartest.sh
+#!/bin/bash # this first line of shell script represents the path of interpreter
+VAR_NAME=RAM
+echo "welcome $VAR_NAME"
+
+sh test.sh 
+
+
+
+SpVartest.sh
+#!/bin/bash # this first line of shell script represents the path of interpreter
+VAR_NAME=$1
+echo "welcome $VAR_NAME"
+
+sh SpVartest.sh RAM # passing arguments
+
+
+DynSpVartest.sh
+#!/bin/bash # this first line of shell script represents the path of interpreter
+echo "welcome"
+read USER_NAME
+echo "User name is $USER_NAME"
+echo "enter pwd"
+read -s PASSWORD # -s means hide
+
+sh DynSpVartest.sh RAM # passing arguments
+
+
+
+tim.sh
+TIMESTAMP=$(date +%s) # $(COMMAND)
+echo "$TIMESTAMP"
+sleep 10
+endtime=$(date +%s) #only seconds
+totaltime=$(($endtime - $TIMESTAMP)
+echo "$totaltime"
+
+
+
+Special variables : already created by shell
+=================
+$1 $2 ... $N args passed to script
+All variables passed to script: $@
+Number of variables passed to script: $#
+Script name: $0
+Present which directory you are in: $PWD
+Who is running this script: $USER
+Home direcory of the user: $Home
+PID of the script: $$
+sleep 100 & # sending the sleep cmd in background
+Background process id: $!
+Exit status of previous command: $?
+
+
+
+spe.sh
+
+echo "all args passed to script: $@" # ram
+echo "number of vars passed to script: $#" # 1
+echo "script name: $0" #spe.sh
+echo "Present directory: $PWD" #/home/ec2-user
+echo "who is running: $USER" # ec2-user
+echo "home directory of current user:$HOME" # /home/ec2-user
+echo "PID of this script: $$" # 1967
+sleep 100 & # sending the sleep to background process
+echo "PID of recently executed background process: $!" # 1968
+echo "all args passed to script: $*" # ram
+
+sh spe.sh ram
+
+
+$@ vs $*
+=========
+$@ treats args separately
+$* treats as single args
+
+
+
+
+data types
+==============
+variables are holding data..
+
+mobile number -> numbers
+	integers -> -33,768 -> 33,768
+	float -> 45.90
+	decimal -> long number
+	complex -> 4+8i
+names -> string
+major? -> yes or no Boolean
+skills -> devops aws docker Kubernetes -> list of skills
+skills -> map or dictionary
+	devops: 4 -> key -> value
+	docker: 3
+	Kubernetes: 2
+
+
+everything is STRING in shell and we dont have datatypes in shell
+
+
+datatypes.sh
+num1=100
+num2=200
+sum=$(($num1+$num2)
+echo "$sum"
+
+num3=100
+num4=siva # shell treated siva as zero
+sum5=$(($num3+$num4)
+echo "$sum5" # 100 siva
+
+sh datatypes.sh
+
+
+
+Arrays or list
+Fruits = ("apple","banana")
+echo "fruits are: ${Fruits[@]}"
+
+
+position/index in coding starts from 0
+
+Arrays or list
+Fruits = ("apple","banana")
+echo "fruits 1: ${Fruits[0]}"
+
+
+conditions
+==========
+
+if [ expression ]; then
+	code here
+fi
+
+
+if [ expression ]; then
+	code here
+elif [ expression ]; then
+	code here
+else
+	code here
+fi
+
+
+cond.sh
+#!/bin/bash
+num=$1
+
+if [ $num -gt 20]; then
+   echo "ok"
+elif [ $num -eq 20]; then
+   echo "ok"
+else
+   echo "no ok"
+fi
+
+sh cond.sh 10
+
+
+program will always understand about 
+EXIT code
+==========
+0-127
+
+if you want to understand the previous command execution success or failure then use exit code : in the code use this "$?" # prints the exit code
+
+exit code 0 -> success
+anything else -> failure
+
+
+id -u # prints the user id
+root user id -> 0
+other users id -> greater than 0
+
+
+ex.sh
+
+userid = $(id -u)
+
+if [ $userid -ne 0 ]; then # if root user then success otherwise failure
+    echo "ok"
+    exit 1
+fi
+
+echo "Installing nginx"
+dnf install nginx -y
+
+
+# if you want to understand the previous command execution success or failure then use exit code in the shell scripting use this $? 
+# $? will prints the exit code
+
+if [ $? -ne 0]; then
+    echo "Installing Nginx... FAILURE"
+    exit 1
+else
+    echo "Installing Nginx... SUCCESS"
+fi
+
+# programmer responsibility to check every command exit code then only allow remaining program to execute it.
+
