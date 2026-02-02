@@ -1,0 +1,382 @@
+2_Shell_Script
+
+Recap:
+All variables passed to script: $@
+Number of variables passed to script: $#
+Script name: $0
+Present which directory you are in: $PWD
+Who is running this script: $USER
+Home direcory of the user: $Home
+PID of the script: $$
+sleep 100 & # sending the sleep cmd in background
+Background process id: $!
+Exit status of previous command: $?
+echo "all args passed to script: $*" # ram
+
+Shell Script:
+a. Functions
+b. For loop
+c. Error handling
+
+functions/methods
+===================
+functions are intended to complete specific task, it takes input and does the job.
+It Reduces the repetitive code so that we use functions.
+
+FUNC_NAME(){
+	$1, $2
+	code
+}
+
+FUNC_NAME parameter-1 parameter-2
+
+example:
+validate() {
+	if [ $1 -ne 0 ]; then
+	   echo "$2 ... FAILURE"
+	   exit 1
+	else
+	   echo "$2 .. SUCCESS"
+	fi
+}
+
+dnf install nginx -y
+validate $? "Installing nginx"
+
+dnf install mysql -y
+validate $? "Installing mysql"
+
+dnf install nodejs -y
+validate $? "Installing nodejs"
+
+
+
+redirections means ">"
+=============
+ls -l > output.txt # cmd is success then output is saved in output.txt
+# if any output is already existed in output.txt then that will overwrite it.
+by default, 1 -> success
+2 -> failure
+
+if we dont know the command is success or failure, then we keep "&" and
+"&" captures success/failure output and redirect to output.txt
+commands: 
+ls -l & > output.txt
+cat output.txt
+
+Dont overwrite previous output, we have to use ">>"
+commands: 
+ls -l & >> output.txt
+cat output.txt
+
+
+
+creating logs:
+
+commands:
+# sudo mkdir -p /var/log/shellscript # -p means if shellscript directory is not existed then will create it otherwise no
+# echo logs.sh.log
+
+
+file name: logsfile.sh
+
+#!/bin/bash
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+
+if [ $userid -ne 0]; then
+    echo "please run this script with root user access"
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+validate() {
+	if [ $1 -ne 0 ]; then
+	   echo "$2 ... FAILURE"
+	   exit 1
+	else
+	   echo "$2 .. SUCCESS"
+	fi
+}
+
+dnf install nginx -y & >> $logsfile
+validate $? "Installing nginx"
+
+dnf install mysql -y & >> $logsfile
+validate $? "Installing mysql"
+
+dnf install nodejs -y & >> $logsfile
+validate $? "Installing nodejs"
+
+execute commands:
+sudo sh logsfile.sh
+sudo less /var/log/shell-script/logsfile.sh.log # less is a pager tool helps to view text files or long command outputs oen screen at a time
+
+
+
+tee command:
+It is used to reads standard input and writes it.
+It will do both standard output on screen and writes it into one or more files.
+
+ls -l | tee -a output.txt # -a means append dont overwrite output.txt file just append to it.
+
+
+
+file name: logsfile1.sh
+
+#!/bin/bash
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+
+if [ $userid -ne 0]; then
+    echo "please run this script with root user access" | tee -a $logsfile
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+validate() {
+	if [ $1 -ne 0 ]; then
+	   echo "$2 ... FAILURE" | tee -a $logsfile
+	   exit 1
+	else
+	   echo "$2 .. SUCCESS" | tee -a $logsfile
+	fi
+}
+
+dnf install nginx -y & >> $logsfile
+validate $? "Installing nginx"
+
+dnf install mysql -y & >> $logsfile
+validate $? "Installing mysql"
+
+dnf install nodejs -y & >> $logsfile
+validate $? "Installing nodejs"
+
+execute commands:
+sudo sh logsfile1.sh
+sudo less /var/log/shell-script/logsfile.sh.log # to see latest log
+
+
+
+loops
+=======
+
+for i in {1..100}
+do
+    echo $i
+done
+
+file name: logsfile2.sh
+
+
+#!/bin/bash
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+
+if [ $userid -ne 0]; then
+    echo "please run this script with root user access" | tee -a $logsfile
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+validate() {
+	if [ $1 -ne 0 ]; then
+	   echo "$2 ... FAILURE" | tee -a $logsfile
+	   exit 1
+	else
+	   echo "$2 .. SUCCESS" | tee -a $logsfile
+	fi
+}
+
+for package in $@
+do
+    dnf list installed nginx & >> $logsfile # we are checking in dnf list that nginx package is installed or not
+    if [$? -ne 0]; then
+        echo "$package not installed, installing now"
+	dnf install $package -y & >> $logsfile
+	validate $? "$package installation"
+    else
+	echo "$package already installed, skipping"
+    fi
+done
+
+execute commands:
+sudo sh logsfile2.sh nginx nodejs mysql
+sudo less /var/log/shell-script/logsfile.sh.log # to see latest log
+
+
+
+
+there are colours in Linux, if you want colours then there are colours codes in Linux.
+
+colours code in Linux:
+'\e[31m' # enable
+R -> 31
+G -> 32
+Y -> 33
+B -> 34
+W -> 0
+
+example:
+	echo -e "\e[31m HelloWorld" # -e enable, HelloWorld will print as red colour text
+	echo -e "\e[34m HelloWorld, \e[0m I am printing" # HelloWorld will print in red colour text and I am printing will print in white colour
+
+
+
+
+
+file name: logsfile3.sh
+
+#!/bin/bash
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+N="\e[0m"
+
+if [ $userid -ne 0]; then
+    echo -e "$R please run this script with root user access $N" | tee -a $logsfile
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+validate() {
+	if [ $1 -ne 0 ]; then
+	   echo -e "$2 ...$R FAILURE $N" | tee -a $logsfile
+	   exit 1
+	else
+	   echo -e "$2 ..$G SUCCESS $N" | tee -a $logsfile
+	fi
+}
+
+for package in $@
+do
+    dnf list installed nginx & >> $logsfile # we are checking in dnf list that nginx package is installed or not
+    if [$? -ne 0]; then
+        echo "$package not installed, installing now"
+	dnf install $package -y & >> $logsfile
+	validate $? "$package installation"
+    else
+	echo -e "$package already installed, $Y skipping $N"
+    fi
+done
+
+execute commands:
+sudo sh logsfile3.sh nginx nodejs mysql
+sudo less /var/log/shell-script/logsfile3.sh.log # to see latest log
+
+
+
+error handling
+==============
+
+set -e # will check errors, if found then exit
+
+
+filename : err.sh
+
+#!/bin/bash
+
+set -e # this will be checking for errors, if errors it will exit
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+N="\e[0m"
+
+if [ $userid -ne 0]; then
+    echo -e "$R please run this script with root user access $N" | tee -a $logsfile
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+for package in $@
+do
+    dnf list installed nginx & >> $logsfile # we are checking in dnf list that nginx package is installed or not
+    if [$? -ne 0]; then
+        echo "$package not installed, installing now"
+	dnf install $package -y & >> $logsfile
+    else
+	echo -e "$package already installed, $Y skipping $N"
+    fi
+done
+
+execute commands:
+sudo sh err.sh nginx nodejs mysql
+sudo less /var/log/shell-script/trap.sh.log # to see latest log
+
+
+
+
+trap 'command(s)_to_run' ERR # ERR is a signal
+
+trap 'echo "There is an error in $LINENO, Command: $BASH_COMMAND"' ERR
+
+
+filename : trap.sh
+
+#!/bin/bash
+
+set -e # this will be checking for errors, if errors it will exit
+
+# as per above command will exit before exit call the below command
+trap 'echo "There is an error in $LINENO, Command: $BASH_COMMAND"' ERR
+
+userid=$(id -u)
+logsfolder="/var/log/shellscript"
+logsfile="/var/log/shellscript/$0.log"
+
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+N="\e[0m"
+
+if [ $userid -ne 0]; then
+    echo -e "$R please run this script with root user access $N" | tee -a $logsfile
+    exit 1
+fi
+
+mkdir -p $logsfolder
+
+for package in $@
+do
+    dnf list installed nginx & >> $logsfile # we are checking in dnf list that nginx package is installed or not
+    if [$? -ne 0]; then
+        echo "$package not installed, installing now"
+	dnf install $package -y & >> $logsfile
+    else
+	echo -e "$package already installed, $Y skipping $N"
+    fi
+done
+
+execute commands:
+sudo sh trap.sh
+sudo less /var/log/shell-script/trap.sh.log # to see latest log
+
+
+
+We Can Connect to aws through:
+a. cli
+b. console
+c. API , SDK -> Software Development Kit
+d. Tool: terraform -> IAAC
+
+
