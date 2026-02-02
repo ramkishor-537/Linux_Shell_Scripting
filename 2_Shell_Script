@@ -373,6 +373,29 @@ sudo less /var/log/shell-script/trap.sh.log # to see latest log
 
 
 
+inside shell script we cannot use vim editor, so we use sed editor
+sed editor -> streamline editor
+
+insert text after line 1
+
+sed '1a Hi' users -> add the text after line 1, 
+temporary edit changes only on screen. 
+for permanent changes use -i option
+
+sed '1i Hello' users -> before line 1
+sed '/sbin/d' -> deletes all the lines with text matching sbin/d
+sed '2d' -> delete 2nd line
+
+sed '2s/sbin/SBIN/g' users -> replace sbin with SBIN in 2nd line all occurences
+
+sed 's/sbin/SBIN/g' -> all lines all occurences
+
+
+Key Thing in Automation:
+idempotency -> if you run the script any number of times, it should give the same result
+
+
+
 We Can Connect to aws through:
 a. cli
 b. console
